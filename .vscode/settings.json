@@ -1,4 +1,20 @@
 {
+    "enterFolder": {
+        "root": "d:\\xdnote\\enter-folder",
+        "crumbs": [],
+        "tip": "EnterFolder will update \"file.executes\" in \"setting.json\", If you uninstall or disable this extension, you will use the excludes below replace file.executes to restore the original state.",
+        "excludes": {
+            "**/.git": false,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true,
+            ".gitignore": true,
+            ".vscode": true,
+            "**/.git2": true,
+            "node_modules": true
+        }
+    },
     "files.exclude": {
         "**/.git": false,
         "**/.svn": true,

@@ -2,7 +2,7 @@
   "name": "enter-folder",
   "displayName": "Enter Folder",
   "description": "VSCode extension, into folders as root in Explorer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "xiangda",
   "license": "MIT",
   "repository": {
@@ -17,12 +17,15 @@
   "categories": [
     "Other"
   ],
-  
+  "activationEvents": [
+    "workspaceContains:**"
+  ],
   "contributes": {
     "commands": [
       {
         "command": "enterFolder.enterFolder",
         "title": "Enter Folder",
+        "when": "false",
         "icon": "$(arrow-right)"
       },
       {
@@ -42,11 +45,6 @@
           "command": "enterFolder.enterFolder",
           "when": "explorerResourceIsFolder",
           "group": "2_workspace"
-        },
-        {
-          "command": "enterFolder.backToParent",
-          "when": "enterFolder.inSubFolder",
-          "group": "2_workspace"
         }
       ],
       "view/title": [
@@ -62,7 +60,8 @@
           "when": "enterFolder.inSubFolder"
         },
         {
-          "command": "enterFolder.backToRoot"
+          "command": "enterFolder.backToRoot",
+          "when": "enterFolder.inSubFolder"
         }
       ]
     },
@@ -81,7 +80,7 @@
     "configuration": {
       "title": "Enter Folder",
       "properties": {
-        "enterFolder.navigationState": {
+        "enterFolder": {
           "type": "object",
           "description": "Internal navigation state (do not modify manually)",
           "default": null
