@@ -23,7 +23,7 @@
         "**/Thumbs.db": true,
         ".gitignore": true,
         ".vscode": true,
-        "**/.git2": true,
-        "node_modules": true
+        "node_modules": true,
+        "**/.git2": true
     }
 }

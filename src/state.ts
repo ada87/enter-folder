@@ -1,4 +1,4 @@
-import { window, workspace, commands, ConfigurationTarget } from 'vscode';
+import { workspace, commands, ConfigurationTarget } from 'vscode';
 
 const EXTENSION_KEY = 'enterFolder';
 const CORE_KEY = 'files.exclude';
@@ -34,10 +34,10 @@ const initState = () => {
         }
         SETTING.update(EXTENSION_KEY, initValue, ConfigurationTarget.Workspace);
     } else if (initValue.crumbs.length > 0) {
-//         window.showInformationMessage(`Tips
-// Current is in a sub-folder, 
-// you can use "Ctrl + Shift + BackSpace" 
-// to return to the root folder`);
+        //         window.showInformationMessage(`Tips
+        // Current is in a sub-folder, 
+        // you can use "Ctrl + Shift + BackSpace" 
+        // to return to the root folder`);
         setIsInSubFolder(true);
     }
     const DATA = { ...initValue };

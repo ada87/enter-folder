@@ -1,8 +1,8 @@
 {
   "name": "enter-folder",
   "displayName": "Enter Folder",
-  "description": "VSCode extension, into folders as root in Explorer",
-  "version": "0.0.2",
+  "description": "Make a folder look like the root folder in Explorer.",
+  "version": "0.0.3",
   "publisher": "xiangda",
   "license": "MIT",
   "repository": {

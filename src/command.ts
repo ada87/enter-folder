@@ -1,16 +1,24 @@
-import { workspace, Uri, FileType, env, commands } from 'vscode';
-import { relative, join, sep } from 'path';
+import { workspace, Uri, FileType, env, commands, window } from 'vscode';
+import { relative, join, sep, isAbsolute } from 'path';
 import { ENTER_STATE } from './state'
 
 
-const getExecludes = async (targetRelativePath: string): Promise<Record<string, boolean>> => {
+const getExecludes = async (targetPath: string): Promise<Record<string, boolean> | false> => {
+    const relativePath = relative(ENTER_STATE.root, targetPath);
+    if (relativePath.startsWith('..')) {
+        //         // window.showErrorMessage('Can only enter folders within the current workspace');
+        return false;
+    }
     const newExcludes: Record<string, boolean> = {};
 
+    // window.showInformationMessage(targetRelativePath)
     // Get all items under workspace root directory
     const rootUri = Uri.file(ENTER_STATE.root);
     const entries = await workspace.fs.readDirectory(rootUri);
 
-    const firstLevelFolder = targetRelativePath.split(sep)[0];
+    // const targetRelativePath = isAbsolute(targetPath)?relative()
+
+    const firstLevelFolder = relativePath.split(sep)[0];
     for (const [name] of entries) {
         if (name !== firstLevelFolder) {
             newExcludes[name] = true;
@@ -19,8 +27,8 @@ const getExecludes = async (targetRelativePath: string): Promise<Record<string, 
     }
 
     // If target path has multiple levels, recursively process subfolders
-    if (targetRelativePath.includes(sep)) {
-        const pathParts = targetRelativePath.split(sep);
+    if (relativePath.includes(sep)) {
+        const pathParts = relativePath.split(sep);
         let currentPath = '';
 
         for (let i = 0; i < pathParts.length - 1; i++) {
@@ -99,14 +107,10 @@ export const enterFolder = async (uri?: Uri): Promise<void> => {
         return;
     }
 
-    const relativePath = relative(ENTER_STATE.root, folderPath);
-
-    if (relativePath.startsWith('..')) {
-        //         // window.showErrorMessage('Can only enter folders within the current workspace');
-        return;
+    const excludes = await getExecludes(folderPath);
+    if (excludes != false) {
+        ENTER_STATE.enter(folderPath, excludes);
     }
-    const excludes = await getExecludes(relativePath);
-    ENTER_STATE.enter(folderPath, excludes);
 };
 
 export const backToParent = async (): Promise<void> => {
@@ -118,7 +122,9 @@ export const backToParent = async (): Promise<void> => {
     }
 
     const execludes = await getExecludes(crumbs[crumbs.length - 2])
-    ENTER_STATE.backParent(execludes);
+    if (execludes != false) {
+        ENTER_STATE.backParent(execludes);
+    }
 };
 
 export const backToRoot = async (): Promise<void> => {
