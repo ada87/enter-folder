@@ -1,5 +1,5 @@
-import { workspace, Uri, FileType, env, commands, window } from 'vscode';
-import { relative, join, sep, isAbsolute } from 'path';
+import { workspace, Uri, FileType, env, commands } from 'vscode';
+import { relative, join, sep } from 'path';
 import { ENTER_STATE } from './state'
 
 

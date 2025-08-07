@@ -1,4 +1,5 @@
 .vscode
 node_modules
 *.vsix
-out
+*.js
+pnpm-lock.yaml
