@@ -1,4 +1,6 @@
 .gitignore
+.kiro/**
+.cursor/**
 .vscode/**
 node_modules/**
 *.psd
