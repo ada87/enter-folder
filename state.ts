@@ -1,14 +1,14 @@
 import { workspace, commands, ConfigurationTarget } from 'vscode';
-
+import type { WorkspaceConfiguration } from 'vscode';
 const EXTENSION_KEY = 'enterFolder';
-const CORE_KEY = 'files.exclude';
+const EXCLUDE_KEY = 'files.exclude';
 
 var WORKSPACE_ROOT: string;
 
 type InnerEnterFolderState = {
     root: string;
     crumbs: Array<string>;
-    excludes: Record<string, boolean>;
+    excludes: Record<string, boolean> | undefined;
     tip: string;
 }
 
@@ -22,19 +22,26 @@ type EnterFolderState = {
 const setIsInSubFolder = (inSubFolder: boolean) => commands.executeCommand('setContext', 'enterFolder.inSubFolder', inSubFolder)
 export const ENTER_STATE = {} as EnterFolderState;
 
+const getFileExcludes = (config: WorkspaceConfiguration): Record<string, boolean> | undefined => {
+    const inspection = config.inspect(EXCLUDE_KEY);
+    return inspection?.workspaceFolderValue as any;
+}
+
 const initState = () => {
     const SETTING = workspace.getConfiguration();
-    let initValue: InnerEnterFolderState = SETTING.get(EXTENSION_KEY) as InnerEnterFolderState;
+    // const 
+    let initValue: InnerEnterFolderState | undefined = SETTING.get(EXTENSION_KEY);
+
+
     if (initValue == null || initValue.root == null) {
+
         initValue = {
             root: WORKSPACE_ROOT,
             crumbs: [],
             tip: 'EnterFolder will update "file.executes" in "setting.json", If you uninstall or disable this extension, you will use the excludes below replace file.executes to restore the original state.',
-            excludes: SETTING.get<Record<string, boolean>>(CORE_KEY) || {},
+            excludes: getFileExcludes(SETTING),
         }
-        SETTING.update(EXTENSION_KEY, initValue, ConfigurationTarget.Workspace);
     } else if (initValue.crumbs.length > 0) {
-        //         window.showInformationMessage(`Tips
         // Current is in a sub-folder, 
         // you can use "Ctrl + Shift + BackSpace" 
         // to return to the root folder`);
@@ -43,28 +50,27 @@ const initState = () => {
     const DATA = { ...initValue };
     ENTER_STATE.root = DATA.root;
     ENTER_STATE.getCrumbs = () => DATA.crumbs;
-    ENTER_STATE.enter = (path: string, executes: Record<string, boolean>) => {
+    ENTER_STATE.enter = async (path: string, executes: Record<string, boolean>) => {
         if (path === DATA.root) return;
         if (DATA.crumbs.length == 0) {
-            const originalExecutes = SETTING.get<Record<string, boolean>>(CORE_KEY) || {};
-            DATA.excludes = originalExecutes;
+            DATA.excludes = getFileExcludes(SETTING);
         }
         DATA.crumbs.push(path);
         setIsInSubFolder(true);
-        SETTING.update(CORE_KEY, executes, ConfigurationTarget.Workspace);
-        SETTING.update(EXTENSION_KEY, DATA, ConfigurationTarget.Workspace);
+        await SETTING.update(EXCLUDE_KEY, executes, ConfigurationTarget.Workspace);
+        await SETTING.update(EXTENSION_KEY, DATA, ConfigurationTarget.Workspace);
     };
-    ENTER_STATE.backParent = (executes: Record<string, boolean>) => {
+    ENTER_STATE.backParent = async (executes: Record<string, boolean>) => {
         DATA.crumbs.pop();
         setIsInSubFolder(true);
-        SETTING.update(CORE_KEY, executes, ConfigurationTarget.Workspace);
-        SETTING.update(EXTENSION_KEY, DATA, ConfigurationTarget.Workspace);
+        await SETTING.update(EXCLUDE_KEY, executes, ConfigurationTarget.Workspace);
+        await SETTING.update(EXTENSION_KEY, DATA, ConfigurationTarget.Workspace);
     };
-    ENTER_STATE.backRoot = () => {
+    ENTER_STATE.backRoot = async () => {
         DATA.crumbs = [];
         setIsInSubFolder(false);
-        SETTING.update(CORE_KEY, DATA.excludes, ConfigurationTarget.Workspace);
-        SETTING.update(EXTENSION_KEY, { ...initValue, crumbs: [] }, ConfigurationTarget.Workspace);
+        await SETTING.update(EXCLUDE_KEY, DATA.excludes, ConfigurationTarget.Workspace);
+        await SETTING.update(EXTENSION_KEY, undefined, ConfigurationTarget.Workspace);
     };
 }
 
